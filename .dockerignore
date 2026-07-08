@@ -1,0 +1,9 @@
+tmp
+uploads
+.env
+.env.*
+.git
+.gitignore
+Dockerfile
+.dockerignore
+*.log

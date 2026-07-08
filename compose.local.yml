@@ -1,0 +1,12 @@
+services:
+  anucloud-backend:
+    build:
+      context: .
+    container_name: anucloud-backend-local
+    env_file:
+      - .env.local
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped

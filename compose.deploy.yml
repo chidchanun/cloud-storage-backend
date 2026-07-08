@@ -1,0 +1,14 @@
+services:
+  anucloud-backend:
+    image: anucloud-backend:latest
+    container_name: anucloud-backend
+    env_file:
+      - .env.deploy
+    ports:
+      - "4002:4002"
+    volumes:
+      - anucloud_uploads:/app/uploads
+    restart: unless-stopped
+
+volumes:
+  anucloud_uploads:

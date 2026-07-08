@@ -1,0 +1,9 @@
+# ไม่ควร commit .env เพราะมี password / secret
+.env*
+
+# ไฟล์ temporary
+tmp/
+
+# binary ที่ build แล้ว
+*.exe
+cloud-storage-backend

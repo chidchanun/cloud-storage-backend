@@ -1,0 +1,22 @@
+CREATE TABLE `shared_folder` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `folder_id` bigint NOT NULL,
+  `shared_by_user_id` int NOT NULL,
+  `shared_with_user_id` int NOT NULL,
+  `permission` enum('viewer','editor') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'viewer',
+  `expires_at` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `active_key` tinyint GENERATED ALWAYS AS ((case when (`deleted_at` is null) then 1 else NULL end)) STORED,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_shared_folder_active` (`folder_id`,`shared_with_user_id`,`active_key`),
+  KEY `idx_shared_folder_folder` (`folder_id`),
+  KEY `idx_shared_folder_recipient` (`shared_with_user_id`,`deleted_at`),
+  KEY `idx_shared_folder_sender` (`shared_by_user_id`,`deleted_at`),
+  KEY `idx_shared_folder_expires` (`expires_at`),
+  CONSTRAINT `fk_shared_folder_folder` FOREIGN KEY (`folder_id`) REFERENCES `user_folder` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_shared_folder_recipient` FOREIGN KEY (`shared_with_user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_shared_folder_sender` FOREIGN KEY (`shared_by_user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `chk_shared_folder_not_self` CHECK ((`shared_by_user_id` <> `shared_with_user_id`))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

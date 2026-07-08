@@ -1,0 +1,61 @@
+# โฟลเดอร์หลักของโปรเจ็กต์
+root = "."
+
+# เก็บ binary ชั่วคราวที่ Air build ขึ้นมา
+tmp_dir = "tmp"
+
+# โหลด environment variables จาก .env
+env_files = [".env"]
+
+[build]
+# สำหรับ Linux/macOS
+# โปรเจ็กต์นี้มี main package อยู่ที่ ./cmd/api
+cmd = "go build -o ./tmp/api ./cmd/api"
+
+# binary ที่ Air จะรันหลัง build สำเร็จ
+entrypoint = ["./tmp/api"]
+
+# ตรวจจับการเปลี่ยนแปลงของไฟล์ Go
+include_ext = ["go"]
+
+# ตรวจจับการเปลี่ยนแปลงของ .env ด้วย
+include_file = [".env"]
+
+# ไม่ต้องเฝ้าดูโฟลเดอร์เหล่านี้
+exclude_dir = [
+    "tmp",
+    "vendor",
+    ".git",
+    "node_modules"
+]
+
+# หน่วงเล็กน้อย ป้องกัน build หลายครั้งขณะบันทึกไฟล์ติดกัน
+delay = 300
+
+# ถ้า build ไม่ผ่าน ให้หยุด binary เดิม
+stop_on_error = true
+
+# ไม่ build ใหม่หากเนื้อหาไฟล์ไม่ได้เปลี่ยนจริง
+exclude_unchanged = true
+
+[build.windows]
+# Windows ต้อง build เป็นไฟล์ .exe
+cmd = "go build -o ./tmp/api.exe ./cmd/api"
+
+# Path ของ binary สำหรับ Windows
+entrypoint = ["tmp\\api.exe"]
+
+[log]
+# แสดงเวลาหน้า log
+time = true
+
+[misc]
+# ลบโฟลเดอร์ tmp เมื่อปิด Air
+clean_on_exit = true
+
+[screen]
+# ล้าง terminal เมื่อมีการ build ใหม่
+clear_on_rebuild = false
+
+# เก็บ log เดิมไว้
+keep_scroll = true
