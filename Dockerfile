@@ -29,6 +29,6 @@ COPY --from=build /out/cloud-storage-api /app/cloud-storage-api
 
 USER app
 
-EXPOSE 4002
+EXPOSE 4003
 
 CMD ["/app/cloud-storage-api"]
