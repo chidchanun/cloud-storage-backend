@@ -41,9 +41,13 @@ func main() {
 	planRepo := repository.NewPlanRepository(db)
 	userPlanRepo := repository.NewUserPlanRepository(db)
 	userFileStarRepo := repository.NewUserFileStarRepository(db)
+	userFolderStarRepo := repository.NewUserFolderStarRepository(db)
 
 	userFileStarHandler := handler.NewUserFileStarHandler(
 		userFileStarRepo,
+	)
+	userFolderStarHandler := handler.NewUserFolderStarHandler(
+		userFolderStarRepo,
 	)
 
 	jwtService := auth.NewJWTService(
@@ -136,20 +140,21 @@ func main() {
 	)
 
 	appRouter := router.New(router.Config{
-		AuthHandler:         authHandler,
-		FileHandler:         fileHandler,
-		FolderHandler:       folderHandler,
-		SharedFileHandler:   sharedFileHandler,
-		SharedFolderHandler: sharedFolderHandler,
-		UserFileStarHandler: userFileStarHandler,
-		UserHandler:         userHandler,
-		PlanHandler:         planHandler,
-		JWTService:          jwtService,
-		CookieService:       cookieService,
-		UserRepository:      userRepo,
-		UserTokenRepository: userTokenRepo,
-		CORSOrigin:          cfg.CORSOrigin,
-		UploadRoot:          cfg.UploadRoot,
+		AuthHandler:           authHandler,
+		FileHandler:           fileHandler,
+		FolderHandler:         folderHandler,
+		SharedFileHandler:     sharedFileHandler,
+		SharedFolderHandler:   sharedFolderHandler,
+		UserFileStarHandler:   userFileStarHandler,
+		UserFolderStarHandler: userFolderStarHandler,
+		UserHandler:           userHandler,
+		PlanHandler:           planHandler,
+		JWTService:            jwtService,
+		CookieService:         cookieService,
+		UserRepository:        userRepo,
+		UserTokenRepository:   userTokenRepo,
+		CORSOrigin:            cfg.CORSOrigin,
+		UploadRoot:            cfg.UploadRoot,
 	})
 
 	server := &http.Server{

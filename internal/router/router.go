@@ -11,14 +11,15 @@ import (
 )
 
 type Config struct {
-	AuthHandler         *handler.AuthHandler
-	FileHandler         *handler.FileHandler
-	FolderHandler       *handler.FolderHandler
-	SharedFileHandler   *handler.SharedFileHandler
-	SharedFolderHandler *handler.SharedFolderHandler
-	UserHandler         *handler.UserHandler
-	PlanHandler         *handler.PlanHandler
-	UserFileStarHandler *handler.UserFileStarHandler
+	AuthHandler           *handler.AuthHandler
+	FileHandler           *handler.FileHandler
+	FolderHandler         *handler.FolderHandler
+	SharedFileHandler     *handler.SharedFileHandler
+	SharedFolderHandler   *handler.SharedFolderHandler
+	UserHandler           *handler.UserHandler
+	PlanHandler           *handler.PlanHandler
+	UserFileStarHandler   *handler.UserFileStarHandler
+	UserFolderStarHandler *handler.UserFolderStarHandler
 
 	JWTService          *auth.JWTService
 	CookieService       *auth.CookieService
@@ -458,6 +459,34 @@ func New(cfg Config) http.Handler {
 	)
 
 	// ดูรายละเอียดโฟลเดอร์
+	mux.Handle(
+		"GET /api/folders/starred",
+		protectedVerifiedRoute(
+			http.HandlerFunc(cfg.UserFolderStarHandler.ListStarredFolders),
+		),
+	)
+
+	mux.Handle(
+		"POST /api/folders/{id}/star",
+		protectedVerifiedRoute(
+			http.HandlerFunc(cfg.UserFolderStarHandler.StarFolder),
+		),
+	)
+
+	mux.Handle(
+		"DELETE /api/folders/{id}/star",
+		protectedVerifiedRoute(
+			http.HandlerFunc(cfg.UserFolderStarHandler.UnstarFolder),
+		),
+	)
+
+	mux.Handle(
+		"GET /api/folders/{id}/star",
+		protectedVerifiedRoute(
+			http.HandlerFunc(cfg.UserFolderStarHandler.CheckFolderStar),
+		),
+	)
+
 	mux.Handle(
 		"GET /api/folders/{id}",
 		protectedVerifiedRoute(
