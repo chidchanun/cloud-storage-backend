@@ -18,6 +18,7 @@ type Config struct {
 	SharedFolderHandler *handler.SharedFolderHandler
 	UserHandler         *handler.UserHandler
 	PlanHandler         *handler.PlanHandler
+	UserFileStarHandler *handler.UserFileStarHandler
 
 	JWTService          *auth.JWTService
 	CookieService       *auth.CookieService
@@ -353,6 +354,51 @@ func New(cfg Config) http.Handler {
 		"PATCH /api/trash/files/{id}/restore",
 		protectedVerifiedRoute(
 			http.HandlerFunc(cfg.FileHandler.Restore),
+		),
+	)
+
+	// =========================
+	// File Star API
+	// =========================
+
+	// รายการไฟล์สำคัญทั้งหมด
+	// ต้องวางก่อน /api/files/{id}
+	mux.Handle(
+		"GET /api/files/starred",
+		protectedRoute(
+			http.HandlerFunc(
+				cfg.UserFileStarHandler.ListStarredFiles,
+			),
+		),
+	)
+
+	// กดไฟล์เป็นสำคัญ
+	mux.Handle(
+		"POST /api/files/{id}/star",
+		protectedRoute(
+			http.HandlerFunc(
+				cfg.UserFileStarHandler.StarFile,
+			),
+		),
+	)
+
+	// ยกเลิกไฟล์สำคัญ
+	mux.Handle(
+		"DELETE /api/files/{id}/star",
+		protectedRoute(
+			http.HandlerFunc(
+				cfg.UserFileStarHandler.UnstarFile,
+			),
+		),
+	)
+
+	// ตรวจว่าไฟล์ถูกกดสำคัญหรือยัง
+	mux.Handle(
+		"GET /api/files/{id}/star",
+		protectedRoute(
+			http.HandlerFunc(
+				cfg.UserFileStarHandler.CheckFileStar,
+			),
 		),
 	)
 

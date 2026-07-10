@@ -54,8 +54,8 @@ CREATE TABLE IF NOT EXISTS `user_token` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `revoked_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_user_token_user_id` (`user_id`),
   UNIQUE KEY `uq_user_token_hash` (`token_hash`),
+  KEY `idx_user_token_user_id` (`user_id`),
   KEY `idx_user_token_expired_at` (`expired_at`),
   KEY `idx_user_token_revoked_at` (`revoked_at`),
   CONSTRAINT `fk_user_token_user`

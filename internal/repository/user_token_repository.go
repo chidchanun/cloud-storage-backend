@@ -32,12 +32,7 @@ func (r *UserTokenRepository) Upsert(
 			expired_at,
 			revoked_at
 		)
-		VALUES (?, ?, ?, NULL) AS new
-		ON DUPLICATE KEY UPDATE
-			token_hash = new.token_hash,
-			expired_at = new.expired_at,
-			revoked_at = NULL,
-			updated_at = NOW()
+		VALUES (?, ?, ?, NULL)
 	`
 
 	_, err := r.db.ExecContext(

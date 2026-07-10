@@ -40,6 +40,11 @@ func main() {
 	googleAuthRepo := repository.NewGoogleAuthRepository(db)
 	planRepo := repository.NewPlanRepository(db)
 	userPlanRepo := repository.NewUserPlanRepository(db)
+	userFileStarRepo := repository.NewUserFileStarRepository(db)
+
+	userFileStarHandler := handler.NewUserFileStarHandler(
+		userFileStarRepo,
+	)
 
 	jwtService := auth.NewJWTService(
 		cfg.JWTSecret,
@@ -136,6 +141,7 @@ func main() {
 		FolderHandler:       folderHandler,
 		SharedFileHandler:   sharedFileHandler,
 		SharedFolderHandler: sharedFolderHandler,
+		UserFileStarHandler: userFileStarHandler,
 		UserHandler:         userHandler,
 		PlanHandler:         planHandler,
 		JWTService:          jwtService,
