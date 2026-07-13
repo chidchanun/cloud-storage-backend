@@ -676,55 +676,7 @@ func (h *FolderHandler) SoftDelete(
 		return
 	}
 
-	// ยังไม่ให้ลบโฟลเดอร์ที่มีไฟล์อยู่ข้างใน
-	filesInFolder, err := h.fileRepo.FindAllByFolderID(
-		r.Context(),
-		userFolder.UserID,
-		&userFolder.ID,
-	)
-	if err != nil {
-		response.Error(
-			w,
-			http.StatusInternalServerError,
-			"ไม่สามารถตรวจสอบไฟล์ในโฟลเดอร์ได้",
-		)
-		return
-	}
-
-	if len(filesInFolder) > 0 {
-		response.Error(
-			w,
-			http.StatusConflict,
-			"ไม่สามารถลบโฟลเดอร์ที่ยังมีไฟล์อยู่ได้",
-		)
-		return
-	}
-
-	// ยังไม่ให้ลบโฟลเดอร์ที่มีโฟลเดอร์ลูกอยู่ข้างใน
-	childFolders, err := h.folderRepo.FindAllByParentID(
-		r.Context(),
-		userFolder.UserID,
-		&userFolder.ID,
-	)
-	if err != nil {
-		response.Error(
-			w,
-			http.StatusInternalServerError,
-			"ไม่สามารถตรวจสอบโฟลเดอร์ย่อยได้",
-		)
-		return
-	}
-
-	if len(childFolders) > 0 {
-		response.Error(
-			w,
-			http.StatusConflict,
-			"ไม่สามารถลบโฟลเดอร์ที่ยังมีโฟลเดอร์ย่อยอยู่ได้",
-		)
-		return
-	}
-
-	deleted, err := h.folderRepo.SoftDelete(
+	deletedFolders, deletedFiles, err := h.softDeleteFolderTree(
 		r.Context(),
 		claims.UserID,
 		userFolder.ID,
@@ -738,7 +690,7 @@ func (h *FolderHandler) SoftDelete(
 		return
 	}
 
-	if !deleted {
+	if deletedFolders == 0 {
 		response.Error(
 			w,
 			http.StatusNotFound,
@@ -751,10 +703,83 @@ func (h *FolderHandler) SoftDelete(
 		w,
 		http.StatusOK,
 		map[string]interface{}{
-			"message":   "ลบโฟลเดอร์สำเร็จ",
-			"folder_id": userFolder.ID,
+			"message":         "ลบโฟลเดอร์สำเร็จ",
+			"folder_id":       userFolder.ID,
+			"deleted_folders": deletedFolders,
+			"deleted_files":   deletedFiles,
 		},
 	)
+}
+
+func (h *FolderHandler) softDeleteFolderTree(
+	ctx context.Context,
+	userID int,
+	folderID int64,
+) (int, int, error) {
+	deletedFolders := 0
+	deletedFiles := 0
+
+	childFolders, err := h.folderRepo.FindAllByParentID(
+		ctx,
+		userID,
+		&folderID,
+	)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	for _, childFolder := range childFolders {
+		childDeletedFolders, childDeletedFiles, err := h.softDeleteFolderTree(
+			ctx,
+			userID,
+			childFolder.ID,
+		)
+		if err != nil {
+			return 0, 0, err
+		}
+
+		deletedFolders += childDeletedFolders
+		deletedFiles += childDeletedFiles
+	}
+
+	filesInFolder, err := h.fileRepo.FindAllByFolderID(
+		ctx,
+		userID,
+		&folderID,
+	)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	for _, file := range filesInFolder {
+		deleted, err := h.fileRepo.SoftDelete(
+			ctx,
+			file.ID,
+			userID,
+		)
+		if err != nil {
+			return 0, 0, err
+		}
+
+		if deleted {
+			deletedFiles += 1
+		}
+	}
+
+	deleted, err := h.folderRepo.SoftDelete(
+		ctx,
+		userID,
+		folderID,
+	)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if deleted {
+		deletedFolders += 1
+	}
+
+	return deletedFolders, deletedFiles, nil
 }
 
 // validateFolderName ตรวจสอบชื่อโฟลเดอร์
